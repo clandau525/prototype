@@ -34,17 +34,17 @@ fi
 
 # Update system
 print_status "Updating system packages..."
-sudo yum update -y
+sudo yum update -y --skip-broken
 
 # Install development tools
 print_status "Installing development tools..."
 sudo yum groupinstall -y "Development Tools"
-sudo yum install -y git curl wget
+sudo yum install -y git curl wget --skip-broken
 
 # Install Node.js
 print_status "Installing Node.js..."
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs
+sudo yum install -y nodejs --skip-broken
 
 # Verify Node.js installation
 NODE_VERSION=$(node --version)
@@ -58,11 +58,17 @@ sudo npm install -g pm2
 
 # Install Nginx
 print_status "Installing Nginx..."
-sudo yum install -y nginx
+sudo yum install -y nginx --skip-broken
 
 # Install Python
 print_status "Installing Python..."
-sudo yum install -y python3 python3-pip
+sudo yum install -y python3 python3-pip --skip-broken
+
+# Install Redis
+print_status "Installing Redis..."
+sudo yum install -y redis --skip-broken
+sudo systemctl start redis
+sudo systemctl enable redis
 
 # Create application directory
 print_status "Setting up application directory..."
@@ -97,6 +103,8 @@ if [ -f "backend-api/package.json" ]; then
     print_status "Installing backend dependencies..."
     cd backend-api
     npm install
+    print_status "Building backend API..."
+    npm run build
     cd ..
 fi
 
@@ -130,9 +138,30 @@ if [ -d "backend-api" ]; then
     cat > backend-api/.env << 'EOF'
 NODE_ENV=production
 PORT=3001
+
+# JWT Configuration
+JWT_SECRET=$(openssl rand -base64 32)
+JWT_EXPIRES_IN=24h
+JWT_ISSUER=file-upload-api
+JWT_AUDIENCE=file-upload-client
+
+# CORS Configuration
 CORS_ORIGIN=*
-UPLOAD_MAX_SIZE=104857600
-UPLOAD_MAX_FILES=10
+
+# Redis Configuration (using local Redis)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+
+# Upload Configuration
+MAX_FILE_SIZE=104857600
+SESSION_EXPIRY_HOURS=24
+CHUNK_SIZE=1048576
+TEMP_DIR=/tmp/uploads
+
+# Logging Configuration
+LOG_LEVEL=info
+LOG_FORMAT=json
 EOF
 fi
 
@@ -198,7 +227,7 @@ module.exports = {
   apps: [
     {
       name: 'file-upload-api',
-      script: './backend-api/src/index.js',
+      script: './dist/index.js',
       cwd: '/var/www/file-upload-system/backend-api',
       instances: 1,
       exec_mode: 'cluster',
@@ -208,7 +237,8 @@ module.exports = {
       },
       error_file: '/var/log/pm2/file-upload-api-error.log',
       out_file: '/var/log/pm2/file-upload-api-out.log',
-      log_file: '/var/log/pm2/file-upload-api.log'
+      log_file: '/var/log/pm2/file-upload-api.log',
+      time: true
     }
   ]
 };
@@ -237,8 +267,7 @@ fi
 
 # Install additional useful tools
 print_status "Installing additional tools..."
-sudo yum install -y htop tree
-
+sudo yum install -y htop tree --skip-broken
 # Create useful aliases
 cat >> ~/.bashrc << 'EOF'
 
