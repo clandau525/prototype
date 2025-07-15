@@ -64,7 +64,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
     });
 
     if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({
+      res.status(401).json({
         error: {
           code: 'TOKEN_EXPIRED',
           message: 'Access token has expired',
@@ -72,10 +72,11 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
           requestId: req.headers['x-request-id'] || 'unknown'
         }
       });
+      return;
     }
 
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({
+      res.status(401).json({
         error: {
           code: 'INVALID_TOKEN',
           message: 'Invalid access token',
@@ -83,9 +84,10 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
           requestId: req.headers['x-request-id'] || 'unknown'
         }
       });
+      return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: {
         code: 'AUTH_ERROR',
         message: 'Authentication failed',
@@ -97,9 +99,13 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
 };
 
 export const generateToken = (payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss' | 'aud'>): string => {
-  return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
-    issuer: config.jwt.issuer,
-    audience: config.jwt.audience
-  });
+  return jwt.sign(
+    payload, 
+    config.jwt.secret as string, 
+    {
+      expiresIn: config.jwt.expiresIn as string,
+      issuer: config.jwt.issuer as string,
+      audience: config.jwt.audience as string
+    }
+  );
 };

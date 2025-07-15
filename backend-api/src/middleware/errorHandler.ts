@@ -1,7 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from 'express-validator';
 import { logger } from '../utils/logger';
-import { ErrorResponse } from '@shared/types';
+// Import ErrorResponse type locally to avoid path issues
+interface ErrorResponse {
+  error: {
+    code: string;
+    message: string;
+    details?: Record<string, any>;
+    timestamp: Date;
+    requestId: string;
+  };
+}
 
 export interface AppError extends Error {
   statusCode?: number;
@@ -42,7 +51,8 @@ export const errorHandler = (
       }
     };
 
-    return res.status(400).json(errorResponse);
+    res.status(400).json(errorResponse);
+    return;
   }
 
   // Handle custom app errors
@@ -69,7 +79,8 @@ export const errorHandler = (
       }
     };
 
-    return res.status(appError.statusCode || 500).json(errorResponse);
+    res.status(appError.statusCode || 500).json(errorResponse);
+    return;
   }
 
   // Handle generic errors
