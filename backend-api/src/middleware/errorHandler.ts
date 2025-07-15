@@ -13,8 +13,8 @@ export const errorHandler = (
   error: AppError | ValidationError[] | Error,
   req: Request,
   res: Response,
-  next: NextFunction
-) => {
+  _next: NextFunction
+): void => {
   const requestId = req.headers['x-request-id'] || 'unknown';
 
   // Handle validation errors from express-validator

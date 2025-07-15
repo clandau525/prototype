@@ -45,7 +45,7 @@ router.post('/login',
         requestId: req.headers['x-request-id']
       });
 
-      return res.status(401).json({
+      res.status(401).json({
         error: {
           code: 'INVALID_CREDENTIALS',
           message: 'Invalid email or password',
@@ -53,6 +53,7 @@ router.post('/login',
           requestId: req.headers['x-request-id'] || 'unknown'
         }
       });
+      return;
     }
 
     // Generate JWT token

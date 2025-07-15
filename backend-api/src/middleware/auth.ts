@@ -21,12 +21,12 @@ export interface JWTPayload {
   aud: string;
 }
 
-export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
-    return res.status(401).json({
+    res.status(401).json({
       error: {
         code: 'MISSING_TOKEN',
         message: 'Access token is required',
@@ -34,6 +34,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
         requestId: req.headers['x-request-id'] || 'unknown'
       }
     });
+    return;
   }
 
   try {

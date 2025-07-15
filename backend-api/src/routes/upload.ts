@@ -7,7 +7,7 @@ const router = Router();
 router.use(authenticateToken);
 
 // Placeholder routes - will be implemented in subsequent tasks
-router.get('/health', (req, res) => {
+router.get('/health', (_req, res) => {
   res.json({ 
     status: 'ok', 
     service: 'upload',
