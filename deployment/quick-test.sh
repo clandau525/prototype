@@ -1,441 +1,207 @@
 #!/bin/bash
 
-# Quick Test Setup for File Upload System Frontend
-# Run this on Amazon Linux 2 to test the frontend components
+# Quick test script to verify the file upload system is working
+# Run this after deployment to check if everything is set up correctly
 
 set -e
 
-echo "🧪 Setting up quick test environment..."
-
 # Colors for output
+RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m'
+NC='\033[0m' # No Color
 
 print_status() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    echo -e "${GREEN}[TEST]${NC} $1"
 }
 
 print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Update system
-print_status "Updating system..."
-sudo yum update -y
-
-# Install Node.js
-print_status "Installing Node.js..."
-curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs git
-
-# Verify installation
-node --version
-npm --version
-
-# Create test directory
-print_status "Setting up test directory..."
-mkdir -p ~/file-upload-test
-cd ~/file-upload-test
-
-# Create a simple test HTML file to verify the components work
-print_status "Creating test files..."
-
-# Create package.json
-cat > package.json << 'EOF'
-{
-  "name": "file-upload-test",
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.1.0",
-    "vite": "^4.5.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/jest-dom": "^6.1.4",
-    "vitest": "^0.34.6"
-  }
-}
-EOF
-
-# Create vite config
-cat > vite.config.js << 'EOF'
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    host: '0.0.0.0',
-    port: 3000
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom'
-  }
-})
-EOF
-
-# Create index.html
-cat > index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>File Upload Test</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
-EOF
-
-# Create src directory and files
-mkdir -p src
-
-# Create main.jsx
-cat > src/main.jsx << 'EOF'
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
-EOF
-
-# Create App.jsx
-cat > src/App.jsx << 'EOF'
-import React from 'react'
-import FileUploadDemo from './FileUploadDemo'
-import './App.css'
-
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>File Upload System Test</h1>
-        <p>Testing the drag-and-drop file upload components</p>
-      </header>
-      <main>
-        <FileUploadDemo />
-      </main>
-    </div>
-  )
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
 }
 
-export default App
-EOF
-
-# Create a simplified FileUploadDemo component
-cat > src/FileUploadDemo.jsx << 'EOF'
-import React, { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import './FileUploadDemo.css'
-
-function FileUploadDemo() {
-  const [files, setFiles] = useState([])
-  const [rejected, setRejected] = useState([])
-
-  const onDrop = useCallback((acceptedFiles, fileRejections) => {
-    setFiles(prev => [...prev, ...acceptedFiles])
-    setRejected(fileRejections)
-  }, [])
-
-  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
-    onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-      'image/png': ['.png'],
-      'image/jpeg': ['.jpg', '.jpeg'],
-      'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
-    },
-    maxSize: 10 * 1024 * 1024 // 10MB
-  })
-
-  const removeFile = (fileToRemove) => {
-    setFiles(prev => prev.filter(file => file !== fileToRemove))
-  }
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const getDropzoneClass = () => {
-    let className = 'dropzone'
-    if (isDragActive) className += ' dropzone--active'
-    if (isDragAccept) className += ' dropzone--accept'
-    if (isDragReject) className += ' dropzone--reject'
-    return className
-  }
-
-  return (
-    <div className="file-upload-demo">
-      <div {...getRootProps({ className: getDropzoneClass() })}>
-        <input {...getInputProps()} />
-        <div className="dropzone-content">
-          {isDragActive ? (
-            isDragAccept ? (
-              <p>✅ Drop files here to upload</p>
-            ) : (
-              <p>❌ Some files cannot be uploaded</p>
-            )
-          ) : (
-            <div>
-              <p>📁 Drag and drop files here, or click to select</p>
-              <p>Supports: PDF, DOC, DOCX, PNG, JPG, JPEG (max 10MB)</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {files.length > 0 && (
-        <div className="selected-files">
-          <h3>Selected Files ({files.length})</h3>
-          <ul>
-            {files.map((file, index) => (
-              <li key={index} className="file-item">
-                <span className="file-name">{file.name}</span>
-                <span className="file-size">{formatFileSize(file.size)}</span>
-                <button onClick={() => removeFile(file)} className="remove-btn">
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {rejected.length > 0 && (
-        <div className="rejected-files">
-          <h3>Rejected Files ({rejected.length})</h3>
-          <ul>
-            {rejected.map(({ file, errors }, index) => (
-              <li key={index} className="file-item rejected">
-                <span className="file-name">{file.name}</span>
-                <span className="file-size">{formatFileSize(file.size)}</span>
-                <div className="errors">
-                  {errors.map(error => (
-                    <span key={error.code} className="error">
-                      {error.message}
-                    </span>
-                  ))}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  )
-}
-
-export default FileUploadDemo
-EOF
-
-# Create CSS files
-cat > src/index.css << 'EOF'
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background-color: #f5f5f5;
-}
-
-* {
-  box-sizing: border-box;
-}
-EOF
-
-cat > src/App.css << 'EOF'
-.App {
-  min-height: 100vh;
-}
-
-.App-header {
-  background-color: #282c34;
-  padding: 2rem;
-  color: white;
-  text-align: center;
-}
-
-.App-header h1 {
-  margin: 0 0 1rem 0;
-}
-
-.App-header p {
-  margin: 0;
-  opacity: 0.8;
-}
-
-main {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-EOF
-
-cat > src/FileUploadDemo.css << 'EOF'
-.file-upload-demo {
-  width: 100%;
-}
-
-.dropzone {
-  border: 2px dashed #ccc;
-  border-radius: 12px;
-  padding: 3rem 2rem;
-  text-align: center;
-  background-color: #fafafa;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  margin-bottom: 2rem;
-}
-
-.dropzone:hover {
-  border-color: #999;
-  background-color: #f0f0f0;
-}
-
-.dropzone--active {
-  border-color: #007bff;
-  background-color: #e3f2fd;
-  transform: scale(1.02);
-}
-
-.dropzone--accept {
-  border-color: #28a745;
-  background-color: #d4edda;
-}
-
-.dropzone--reject {
-  border-color: #dc3545;
-  background-color: #f8d7da;
-}
-
-.dropzone-content p {
-  margin: 0.5rem 0;
-  font-size: 1.1rem;
-}
-
-.selected-files, .rejected-files {
-  margin-top: 2rem;
-}
-
-.selected-files h3, .rejected-files h3 {
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.selected-files ul, .rejected-files ul {
-  list-style: none;
-  padding: 0;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.file-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-  background: white;
-}
-
-.file-item:last-child {
-  border-bottom: none;
-}
-
-.file-item.rejected {
-  background-color: #f8d7da;
-}
-
-.file-name {
-  font-weight: 500;
-  flex: 1;
-  margin-right: 1rem;
-}
-
-.file-size {
-  color: #666;
-  margin-right: 1rem;
-}
-
-.remove-btn {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8rem;
-}
-
-.remove-btn:hover {
-  background-color: #c82333;
-}
-
-.errors {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.error {
-  background-color: #f5c6cb;
-  color: #721c24;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-}
-
-@media (max-width: 768px) {
-  .file-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .file-name, .file-size {
-    margin-right: 0;
-  }
-}
-EOF
-
-# Install dependencies
-print_status "Installing dependencies..."
-npm install
-
-print_status "✅ Quick test setup complete!"
+print_status "🧪 Running File Upload System Tests..."
 echo ""
-print_status "To test the file upload components:"
-echo "1. Start the development server: npm run dev"
-echo "2. The server will run on http://your-ec2-ip:3000"
-echo "3. Make sure your EC2 Security Group allows inbound traffic on port 3000"
+
+# Test 1: Check if services are running
+print_status "1. Checking service status..."
+
+# Check PM2
+if pm2 list | grep -q "file-upload-api"; then
+    if pm2 list | grep "file-upload-api" | grep -q "online"; then
+        echo "  ✅ Backend API (PM2) is running"
+    else
+        print_error "  ❌ Backend API is not online"
+        pm2 status
+    fi
+else
+    print_warning "  ⚠️  Backend API not found in PM2"
+fi
+
+# Check Redis
+if systemctl is-active --quiet redis; then
+    echo "  ✅ Redis is running"
+else
+    print_error "  ❌ Redis is not running"
+fi
+
+# Check Nginx
+if systemctl is-active --quiet nginx; then
+    echo "  ✅ Nginx is running"
+else
+    print_error "  ❌ Nginx is not running"
+fi
+
 echo ""
-print_warning "Security Group Setup:"
-echo "- Go to AWS Console > EC2 > Security Groups"
-echo "- Edit inbound rules for your instance's security group"
-echo "- Add rule: Type=Custom TCP, Port=3000, Source=0.0.0.0/0"
+
+# Test 2: Check port availability
+print_status "2. Checking port availability..."
+
+if netstat -tlnp | grep -q ":80 "; then
+    echo "  ✅ Port 80 (HTTP) is open"
+else
+    print_warning "  ⚠️  Port 80 is not listening"
+fi
+
+if netstat -tlnp | grep -q ":3001 "; then
+    echo "  ✅ Port 3001 (Backend API) is open"
+else
+    print_error "  ❌ Port 3001 is not listening"
+fi
+
+if netstat -tlnp | grep -q ":6379 "; then
+    echo "  ✅ Port 6379 (Redis) is open"
+else
+    print_error "  ❌ Port 6379 (Redis) is not listening"
+fi
+
 echo ""
-print_status "Then run: npm run dev"
+
+# Test 3: Test API endpoints
+print_status "3. Testing API endpoints..."
+
+# Test health endpoint
+if curl -s -f http://localhost/health > /dev/null; then
+    echo "  ✅ Main health endpoint is responding"
+else
+    print_error "  ❌ Main health endpoint is not responding"
+fi
+
+# Test backend health endpoint
+if curl -s -f http://localhost:3001/health > /dev/null; then
+    echo "  ✅ Backend health endpoint is responding"
+else
+    print_error "  ❌ Backend health endpoint is not responding"
+fi
+
+# Test API proxy
+if curl -s -f http://localhost/api/health > /dev/null; then
+    echo "  ✅ API proxy is working"
+else
+    print_error "  ❌ API proxy is not working"
+fi
+
+# Test auth endpoint (should return validation error, which is expected)
+AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST http://localhost/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"invalid","password":"test"}' -o /dev/null)
+
+if [ "$AUTH_RESPONSE" = "400" ]; then
+    echo "  ✅ Auth endpoint is responding with validation"
+elif [ "$AUTH_RESPONSE" = "404" ]; then
+    print_error "  ❌ Auth endpoint not found (routing issue)"
+else
+    print_warning "  ⚠️  Auth endpoint returned unexpected status: $AUTH_RESPONSE"
+fi
+
+echo ""
+
+# Test 4: Test frontend
+print_status "4. Testing frontend..."
+
+if [ -d "/var/www/file-upload-system/frontend/dist" ]; then
+    echo "  ✅ Frontend build directory exists"
+    
+    if [ -f "/var/www/file-upload-system/frontend/dist/index.html" ]; then
+        echo "  ✅ Frontend index.html exists"
+    else
+        print_error "  ❌ Frontend index.html not found"
+    fi
+else
+    print_error "  ❌ Frontend build directory not found"
+fi
+
+# Test frontend serving
+FRONTEND_RESPONSE=$(curl -s -w "%{http_code}" http://localhost/ -o /dev/null)
+if [ "$FRONTEND_RESPONSE" = "200" ]; then
+    echo "  ✅ Frontend is being served correctly"
+else
+    print_error "  ❌ Frontend is not being served (status: $FRONTEND_RESPONSE)"
+fi
+
+echo ""
+
+# Test 5: Check logs for errors
+print_status "5. Checking for recent errors..."
+
+# Check PM2 logs for errors
+if pm2 logs --lines 10 2>/dev/null | grep -i error; then
+    print_warning "  ⚠️  Found errors in PM2 logs (check with: pm2 logs)"
+else
+    echo "  ✅ No recent errors in PM2 logs"
+fi
+
+# Check Nginx error logs
+if sudo tail -n 10 /var/log/nginx/error.log 2>/dev/null | grep -v "No such file" | grep -q .; then
+    print_warning "  ⚠️  Found entries in Nginx error log"
+    sudo tail -n 5 /var/log/nginx/error.log 2>/dev/null || echo "    (Could not read Nginx error log)"
+else
+    echo "  ✅ No recent errors in Nginx logs"
+fi
+
+echo ""
+
+# Summary
+print_status "📊 Test Summary"
+echo ""
+
+# Get server IP
+SERVER_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "unknown")
+
+if [ "$SERVER_IP" != "unknown" ]; then
+    echo "🌐 Your application should be available at:"
+    echo "   Frontend: http://$SERVER_IP"
+    echo "   API: http://$SERVER_IP/api/health"
+    echo ""
+fi
+
+echo "🔧 Useful commands:"
+echo "   pm2 status          - Check application status"
+echo "   pm2 logs            - View application logs"
+echo "   pm2 restart all     - Restart all applications"
+echo "   sudo systemctl status nginx - Check Nginx status"
+echo "   sudo systemctl status redis - Check Redis status"
+echo ""
+
+print_status "✨ Test completed!"
+
+# Test authentication with valid credentials
+echo ""
+print_status "6. Testing authentication with valid credentials..."
+
+AUTH_TEST=$(curl -s -X POST http://localhost/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password123"}')
+
+if echo "$AUTH_TEST" | grep -q "token"; then
+    echo "  ✅ Authentication is working correctly"
+    echo "  📝 Test users available:"
+    echo "     - user@example.com / password123"
+    echo "     - admin@example.com / admin123"
+else
+    print_warning "  ⚠️  Authentication test failed or returned unexpected response"
+    echo "  Response: $AUTH_TEST"
+fi

@@ -30,8 +30,8 @@
   - Write tests for progress tracking components
   - _Requirements: 4.1, 4.2, 4.4, 6.1_
 
-- [ ] 3. Develop backend API service
-- [ ] 3.1 Set up Express.js server with authentication
+- [-] 3. Develop backend API service
+- [x] 3.1 Set up Express.js server with authentication
   - Initialize Node.js project with Express.js and TypeScript
   - Implement JWT authentication middleware
   - Set up request validation using express-validator
