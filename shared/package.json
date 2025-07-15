@@ -1,0 +1,20 @@
+{
+  "name": "file-upload-shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types and constants for file upload system",
+  "main": "types/index.ts",
+  "types": "types/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint types --ext .ts --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint types --ext .ts --fix",
+    "format": "prettier --write \"types/**/*.{ts,js,json,md}\""
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "eslint": "^8.53.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  }
+}

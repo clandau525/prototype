@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Component Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #374151;
+            margin-bottom: 2rem;
+        }
+        .feature-list {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .feature-list h2 {
+            margin-top: 0;
+            color: #374151;
+        }
+        .feature-list ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        .feature-list li {
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+        }
+        .note {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        .note p {
+            margin: 0;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>File Upload Component - Implementation Complete</h1>
+        
+        <div class="feature-list">
+            <h2>✅ Implemented Features</h2>
+            <ul>
+                <li><strong>Drag-and-Drop Interface:</strong> Built with react-dropzone library</li>
+                <li><strong>Visual Feedback:</strong> Different states for hover, active, accept, and reject</li>
+                <li><strong>File Selection Fallback:</strong> "Choose Files" button for click-based selection</li>
+                <li><strong>Supported File Types:</strong> PDF, DOC, DOCX, XLS, XLSX, PNG, JPG, JPEG</li>
+                <li><strong>File Validation:</strong> Client-side validation for file types and sizes</li>
+                <li><strong>File Management:</strong> Remove selected files, clear rejected files</li>
+                <li><strong>Progress Indicators:</strong> File count and size display</li>
+                <li><strong>Responsive Design:</strong> Mobile-friendly interface</li>
+                <li><strong>Accessibility:</strong> ARIA labels and keyboard navigation support</li>
+            </ul>
+        </div>
+
+        <div class="feature-list">
+            <h2>🎨 Visual States</h2>
+            <ul>
+                <li><strong>Default State:</strong> Dashed border with upload instructions</li>
+                <li><strong>Hover State:</strong> Subtle color change and border adjustment</li>
+                <li><strong>Drag Active:</strong> Blue border with scale animation</li>
+                <li><strong>Drag Accept:</strong> Green border for valid files</li>
+                <li><strong>Drag Reject:</strong> Red border for invalid files</li>
+            </ul>
+        </div>
+
+        <div class="feature-list">
+            <h2>🧪 Test Coverage</h2>
+            <ul>
+                <li>Renders dropzone with correct initial state</li>
+                <li>Shows active/accept/reject states during drag operations</li>
+                <li>Accepts valid file types and rejects invalid ones</li>
+                <li>Displays file sizes correctly (Bytes, KB, MB, GB)</li>
+                <li>Allows removing selected files</li>
+                <li>Allows clearing rejected files</li>
+                <li>Opens file dialog when Choose Files is clicked</li>
+                <li>Respects maxFiles limit</li>
+                <li>Handles drag leave events correctly</li>
+            </ul>
+        </div>
+
+        <div class="note">
+            <p><strong>Note:</strong> This component is ready for integration with the React application. 
+            To see it in action, run the development server with the React app.</p>
+        </div>
+    </div>
+</body>
+</html>
